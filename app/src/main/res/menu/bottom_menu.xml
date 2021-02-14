@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/homeClient"
+        android:title="Accueil"
+        android:icon="@drawable/ic_home"
+        />
+    <item
+        android:id="@+id/favorises"
+        android:title="Favories"
+        android:icon="@drawable/ic_favorite"
+        />
+    <item
+        android:id="@+id/actualite"
+        android:title="Actualités"
+        android:icon="@drawable/ic_notifications"/>
+    <item
+        android:id="@+id/pagePersonnel"
+        android:title="Moi"
+        android:icon="@drawable/ic_person" />
+</menu>

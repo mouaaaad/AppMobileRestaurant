@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/my_nav"
+    app:startDestination="@id/homeClient">
+    <activity
+        android:id="@+id/homeClient"
+        android:name="com.example.app_restaurant.HomeClient"
+        android:label="HomeClient" />
+    <activity
+        android:id="@+id/actualite"
+        android:name="com.example.app_restaurant.Actualite"
+        android:label="activity_actualite"
+        tools:layout="@layout/activity_actualite" />
+    <activity
+        android:id="@+id/favorises"
+        android:name="com.example.app_restaurant.Favorises"
+        android:label="activity_favorises"
+        tools:layout="@layout/activity_favorises" />
+    <activity
+        android:id="@+id/pagePersonnel"
+        android:name="com.example.app_restaurant.PagePersonnel"
+        android:label="activity_page_personnel"
+        tools:layout="@layout/activity_page_personnel" />
+</navigation>

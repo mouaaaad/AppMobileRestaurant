@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MenuActivity">
+
+    <TextView
+        android:id="@+id/textView12"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/AppText.Title"
+        android:text="Ajouter Vos Plats"
+        tools:layout_editor_absoluteX="100dp"
+        tools:layout_editor_absoluteY="16dp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="102dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="505dp">
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="10dip"
+            android:layout_marginLeft="0dip"
+            android:layout_marginTop="40dip"
+            android:layout_marginBottom="20dip"
+            android:text="Titre" />
+
+        <EditText
+            android:id="@+id/nom_plat"
+            android:layout_width="245dp"
+            android:layout_height="42dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginTop="30dip"
+            android:layout_marginEnd="10dip"
+            android:layout_marginRight="20dip"
+            android:layout_marginBottom="30dip"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:text="" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="102dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="400dp">
+
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="10dip"
+            android:layout_marginLeft="0dip"
+            android:layout_marginTop="40dip"
+            android:layout_marginBottom="20dip"
+            android:text="detail" />
+
+        <EditText
+            android:id="@+id/detail"
+            android:layout_width="245dp"
+            android:layout_height="42dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginTop="30dip"
+            android:layout_marginEnd="10dip"
+            android:layout_marginRight="20dip"
+            android:layout_marginBottom="30dip"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:text=""
+           />
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="102dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="294dp">
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="10dip"
+            android:layout_marginLeft="0dip"
+            android:layout_marginTop="40dip"
+            android:layout_marginBottom="20dip"
+            android:text="Prix" />
+
+        <EditText
+            android:id="@+id/prix"
+            android:layout_width="245dip"
+            android:layout_height="42dip"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginTop="30dip"
+            android:layout_marginEnd="10dip"
+            android:layout_marginRight="20dip"
+            android:layout_marginBottom="30dip"
+            android:ems="10"
+            android:inputType="number" />
+
+
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/btnChoosemimg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="7dip"
+        android:layout_marginLeft="10dip"
+        android:layout_marginBottom="90dip"
+        android:layout_weight="1"
+        android:textSize="10sp"
+        android:text="Choisir la photo" />
+
+    <Button
+        android:id="@+id/btnUploadmimg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="218dip"
+        android:layout_marginLeft="218dip"
+        android:layout_marginEnd="12dip"
+        android:layout_marginRight="12dip"
+        android:layout_marginBottom="90dip"
+        android:layout_weight="1"
+        android:textSize="10sp"
+        android:text="Telecharger photo" />
+
+    <Button
+        android:id="@+id/ajouter_plat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="100dip"
+        android:layout_marginLeft="100dip"
+        android:layout_marginEnd="100dip"
+        android:layout_marginRight="100dip"
+        android:layout_marginBottom="25dip"
+        android:text="Ajouter Plat" />
+
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="11dip"
+        android:layout_marginLeft="10dip"
+        android:layout_marginBottom="211dp"
+        android:text="imgae" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="108dip"
+        android:layout_height="122dip"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="259dip"
+        android:layout_marginLeft="259dip"
+        android:layout_marginTop="312dip"
+        android:layout_marginEnd="53dip"
+        android:layout_marginRight="53dip"
+        android:layout_marginBottom="169dip" />
+
+
+</RelativeLayout>
