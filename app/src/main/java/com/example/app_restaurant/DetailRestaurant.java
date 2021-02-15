@@ -1,18 +1,18 @@
 package com.example.app_restaurant;
 
-import com.example.app_restaurant.dataBase.data;
+import com.example.app_restaurant.ApiClient.ApiClient;
+import com.example.app_restaurant.ModelClient.Client;
+import com.example.app_restaurant.ModelClient.FavorieClient;
+import com.example.app_restaurant.ModelClient.RestaurantClient;
+import com.example.app_restaurant.ModelClient.RestaurantInterface;
+import com.example.app_restaurant.ModelClient.Review;
+import com.example.app_restaurant.ModelClient.UserInterface;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
-import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -24,8 +24,6 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.app_restaurant.Model.Commentaire;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -33,8 +31,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -42,14 +38,17 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class DetailRestaurant extends FragmentActivity implements OnMapReadyCallback {
     SharedPreferences preferences ;
-    data db_favorie;
     private double latitude ;
     private double longitude ;
     private float rate_total;
@@ -77,28 +76,122 @@ public class DetailRestaurant extends FragmentActivity implements OnMapReadyCall
     ImageView img_restaurant_detail;
     @BindView(R.id.horaire_restaurant_detail)
     TextView textViewHoraire ;
-
+    RestaurantInterface apiRestaurant;
+    RestaurantInterface api;
+    RestaurantInterface apiFavorie;
+    UserInterface ApiUser;
+     Client user ;
+     RestaurantClient restaurantClient ;
+    FavorieClient favorieClient ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_restaurant);
         ButterKnife.bind(this);
-        db_favorie = new data(this);
+
+        sharedPreferences = getSharedPreferences("myRef", MODE_PRIVATE);
+        login = sharedPreferences.getString("Login", null);
+        Bundle extras = getIntent().getExtras();
+        nom_restaurant = extras.getString("nom_restaurant");
+        textViewNom.setText(nom_restaurant);
+
+        //
+        commentaires = new ArrayList<Commentaire>();
+        apiRestaurant= ApiClient.getClient().create(RestaurantInterface.class);
+        Call<RestaurantClient> call= apiRestaurant.getRestaurantByName(nom_restaurant);
+        call.enqueue(new Callback<RestaurantClient>() {
+            @Override
+            public void onResponse(Call<RestaurantClient> call, Response<RestaurantClient> response) {
+                RestaurantInterface apiReview = ApiClient.getClient().create(RestaurantInterface.class);
+                Call<List<Review>> reviewCall= apiReview.getReview(response.body().getId());
+                reviewCall.enqueue(new Callback<List<Review>>() {
+                    @Override
+                    public void onResponse(Call<List<Review>> call, Response<List<Review>> response) {
+                        List<Review> reviews=response.body();
+                        for (Review review: reviews){
+                            commentaires.add(new Commentaire("Commentaire", review.getComment(), review.getRate()));
+                        }
+                        adapter = new CommetaireAdapter(getApplicationContext(), R.layout.structure_commentaire, commentaires);
+                        listCommentaire.setAdapter(adapter);
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Review>> call, Throwable t) {
+
+                    }
+                });
+                restaurantClient=response.body();
+                String adress = restaurantClient.getCity().getCity();
+                adress_restaurant.setText(adress);
+//                String image = restaurantClient.getPicture().toString();
+          //      Glide.with(DetailRestaurant.this).load(image).into(img_restaurant_detail);
+                String num = restaurantClient.getPhone();
+                num_restaurant.setText(num);
+                String categorie = restaurantClient.getRestaurantCategory().getCategory();
+                categorie_restaurant.setText(categorie);
+                String ouverture =restaurantClient.getOpeningTime();
+                String fermeture =restaurantClient.getClosingTime();
+                String horaire=ouverture+"-"+fermeture;
+                textViewHoraire.setText(horaire);
+                latitude=restaurantClient.getLatitude();
+                longitude=restaurantClient.getLongitude();
+                //getClient
+                ApiUser=  ApiClient.getClient().create(UserInterface.class);
+                Log.d("Emaaail",login);
+                Call<Client> clientCall= ApiUser.getClientByemail(login);
+                clientCall.enqueue(new Callback<Client>() {
+                    @Override
+                    public void onResponse(Call<Client> call, Response<Client> response) {
+                        Log.e("ClientR",response.body()+"");
+                        user=response.body();
+                        //favorie
+                        apiFavorie= ApiClient.getClient().create(RestaurantInterface.class);
+                        Call<FavorieClient> favorieClientCall= apiFavorie.getFavorie(user.getId(),restaurantClient.getId());
+                        favorieClientCall.enqueue(new Callback<FavorieClient>() {
+                            @Override
+                            public void onResponse(Call<FavorieClient> call, Response<FavorieClient> response) {
+                                if(response.body()!=null){
+                                    favorieClient=response.body();
+                                    imageViewFavorise.setImageResource(R.drawable.ic_favorite);
+                                    imageViewFavorise.setTag("2");
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<FavorieClient> call, Throwable t) {
+
+                            }
+                        });
+                        //
+                    }
+
+                    @Override
+                    public void onFailure(Call<Client> call, Throwable t) {
+
+                    }
+                });
+                //
+            }
+
+            @Override
+            public void onFailure(Call<RestaurantClient> call, Throwable t) {
+                    Log.d("restaurantN",t.getLocalizedMessage()+"");
+            }
+        });
+        //
+
+       // db_favorie = new data(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        Bundle extras = getIntent().getExtras();
-        nom_restaurant = extras.getString("nom_restaurant");
-        textViewNom.setText(nom_restaurant);
 
-        sharedPreferences = getSharedPreferences("myRef", MODE_PRIVATE);
+
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         table_favorie = database.getReference("Favorie");
-        login = sharedPreferences.getString("Login", null);
 
-        String[] whereArgs = new String[]{
+     /*   String[] whereArgs = new String[]{
                 String.valueOf(nom_restaurant)};
 
         SQLiteDatabase data = db_favorie.getReadableDatabase();
@@ -108,10 +201,10 @@ public class DetailRestaurant extends FragmentActivity implements OnMapReadyCall
         if (cursor.moveToFirst()) {
             imageViewFavorise.setImageResource(R.drawable.ic_favorite);
             imageViewFavorise.setTag("2");
-        }
+        }*/
 
 
-        final DatabaseReference table_commentaire = database.getReference("Commentaire");
+    /*    final DatabaseReference table_commentaire = database.getReference("Commentaire");
 
         commentaires = new ArrayList<Commentaire>();
         table_commentaire.addValueEventListener(new ValueEventListener() {
@@ -144,9 +237,9 @@ public class DetailRestaurant extends FragmentActivity implements OnMapReadyCall
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        });*/
 
-        final DatabaseReference table = database.getReference("Restaurant");
+   /*     final DatabaseReference table = database.getReference("Restaurant");
         table.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -181,7 +274,7 @@ public class DetailRestaurant extends FragmentActivity implements OnMapReadyCall
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        });*/
     }
     /**
      * Manipulates the map once available.
@@ -201,21 +294,50 @@ public class DetailRestaurant extends FragmentActivity implements OnMapReadyCall
         mMap.addMarker(new MarkerOptions().position(sydney).title(nom_restaurant));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
-
+//favorie
     @OnClick(R.id.favorise_restaurant)
     public  void OnClickFavorise(){
         if (imageViewFavorise.getTag().toString().trim().equals("1")){
             imageViewFavorise.setImageResource(R.drawable.ic_favorite);
             imageViewFavorise.setTag("2");
-            db_favorie.insert(nom_restaurant);
+            //db_favorie.insert(nom_restaurant);
+            api= ApiClient.getClient().create(RestaurantInterface.class);
+            FavorieClient favorieClient=new FavorieClient(user,restaurantClient);
+            Log.d("fff",favorieClient+"");
+            Call<FavorieClient> favorieClientCall=api.postFavorie(favorieClient);
+            favorieClientCall.enqueue(new Callback<FavorieClient>() {
+                @Override
+                public void onResponse(Call<FavorieClient> call, Response<FavorieClient> response) {
+                    Log.d("yyyy",response.body()+"");
+                }
+
+                @Override
+                public void onFailure(Call<FavorieClient> call, Throwable t) {
+                }
+            });
         }
         else{
             imageViewFavorise.setImageResource(R.drawable.ic_favorite_white);
             imageViewFavorise.setTag("1");
-            db_favorie.delete(nom_restaurant);
-        }
+            //db_favorie.delete(nom_restaurant);
+            api= ApiClient.getClient().create(RestaurantInterface.class);
+           // FavorieClient favorieClient=new FavorieClient(user,restaurantClient);
+            Log.d("fff",favorieClient+"");
+            Call<FavorieClient> favorieClientCall=api.deleteFavorie(user.getId(),restaurantClient.getId());
+            favorieClientCall.enqueue(new Callback<FavorieClient>() {
+                @Override
+                public void onResponse(Call<FavorieClient> call, Response<FavorieClient> response) {
+                    Log.d("delete",response.body()+"");
+                }
 
+                @Override
+                public void onFailure(Call<FavorieClient> call, Throwable t) {
+
+                }
+            });
+        }
     }
+////////////////
     @OnClick(R.id.btnAjouter_commentaire)
      void OnClickBtn(){
         Intent ajout = new Intent(this, AjoutCommentaire.class);

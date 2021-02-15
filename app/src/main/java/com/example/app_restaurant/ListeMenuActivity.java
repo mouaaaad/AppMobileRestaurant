@@ -18,8 +18,12 @@ import com.baoyz.swipemenulistview.SwipeMenu;
 import com.baoyz.swipemenulistview.SwipeMenuCreator;
 import com.baoyz.swipemenulistview.SwipeMenuItem;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
+import com.example.app_restaurant.ApiClient.ApiClient;
 import com.example.app_restaurant.Model.Restaurant;
 import com.example.app_restaurant.Model.menu;
+import com.example.app_restaurant.ModelClient.Meal;
+import com.example.app_restaurant.ModelClient.RestaurantClient;
+import com.example.app_restaurant.ModelClient.RestaurantInterface;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,10 +33,14 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ListeMenuActivity extends AppCompatActivity {
     //@BindView(R.id.list_menu_total)
@@ -44,6 +52,8 @@ public class ListeMenuActivity extends AppCompatActivity {
     String res;
     SwipeMenuListView listMenuTotal;
     SwipeMenuCreator creator;
+    RestaurantInterface apiMenu;
+    RestaurantInterface apiDelete;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,9 +102,29 @@ public class ListeMenuActivity extends AppCompatActivity {
         mStorageRef= FirebaseStorage.getInstance().getReference();
         Bundle extras=getIntent().getExtras();
          res=new String(extras.getString("restaurant"));
-
+         Log.d("nom_rest",res);
         menus =new ArrayList<menu>();
-        table_menu.addValueEventListener(new ValueEventListener(){
+        apiMenu= ApiClient.getClient().create(RestaurantInterface.class);
+        Call<List<Meal>> call= apiMenu.getMeal(res);
+        call.enqueue(new Callback<List<Meal>>() {
+            @Override
+            public void onResponse(Call<List<Meal>> call, Response<List<Meal>> response) {
+                List<Meal> meals =response.body();
+                for(Meal meal : meals){
+                    menus.add(new menu(meal.getMeal(),meal.getPrice()+"Dh","photo",meal.getDetail(),meal.getRestaurant().getName()));
+                }
+                adapter=new MenuAdapter(getApplicationContext(), R.layout.activity_liste_menu,menus);
+                listMenuTotal.setAdapter(adapter);
+            }
+
+            @Override
+            public void onFailure(Call<List<Meal>> call, Throwable t) {
+
+            }
+        });
+
+
+     /*   table_menu.addValueEventListener(new ValueEventListener(){
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
@@ -108,7 +138,7 @@ public class ListeMenuActivity extends AppCompatActivity {
                         if(restaurant1==null)
                         {
                             restaurant1=" ";
-                        }*/
+                        }
                         if( snapshot.child("restaurant").getValue(String.class).equals(res))
                         {
                             String nom =snapshot.getKey();
@@ -135,7 +165,7 @@ public class ListeMenuActivity extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.d("test","non");
-            }  });
+            }  });*/
         listMenuTotal.setOnMenuItemClickListener(new SwipeMenuListView.OnMenuItemClickListener() {
             @Override
 
@@ -144,19 +174,28 @@ public class ListeMenuActivity extends AppCompatActivity {
                     case 0:
                         menu Menu ;
                         Menu=menus.get(position);
-                        FirebaseDatabase database = FirebaseDatabase.getInstance();
-                        DatabaseReference table_res = database.getReference("Menu");
-                        table_res.child(Menu.getNom()).removeValue();
+                        //FirebaseDatabase database = FirebaseDatabase.getInstance();
+                        //DatabaseReference table_res = database.getReference("Menu");
+                       // table_res.child(Menu.getNom()).removeValue();
+                        apiDelete= ApiClient.getClient().create(RestaurantInterface.class);
+                        Call<Void> voidCall= apiDelete.deleteMeal(Menu.getNom());
+                        voidCall.enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> response) {
+
+                            }
+
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {
+
+                            }
+                        });
                         menus.clear();
                         //restaurants.remove(restaurant);
                         adapter=new MenuAdapter(getApplicationContext(),R.layout.activity_menu_structure,menus);
                         listMenuTotal.setAdapter(adapter);
                         break;
-                    case 1:
-                        menu Menu1 ;
-                        Menu1=menus.get(position);
-                        Log.d("Menu",Menu1.getNom());
-                        break;
+
                 }
 
                 return false;

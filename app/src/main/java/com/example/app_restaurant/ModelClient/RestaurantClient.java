@@ -35,6 +35,9 @@ public class RestaurantClient {
     @SerializedName("restaurantCategory")
     @Expose
     private RestaurantCategory restaurantCategory;
+    @SerializedName("createdAt")
+    @Expose
+    private String createdAt;
     @SerializedName("manager")
     @Expose
     private Manager manager;
@@ -127,6 +130,10 @@ public class RestaurantClient {
         this.manager = manager;
     }
 
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
     @Override
     public String toString() {
         return "RestaurantClient{" +
@@ -144,7 +151,7 @@ public class RestaurantClient {
                 '}';
     }
 
-    public RestaurantClient(String name, Object picture, String phone, Double latitude, Double longitude, City city, String openingTime, String closingTime, RestaurantCategory restaurantCategory, Manager manager) {
+    public RestaurantClient(String name, Object picture, String phone, Double latitude, Double longitude, City city, String openingTime, String closingTime, RestaurantCategory restaurantCategory, String createdAt, Manager manager) {
         this.name = name;
         this.picture = picture;
         this.phone = phone;
@@ -154,6 +161,7 @@ public class RestaurantClient {
         this.openingTime = openingTime;
         this.closingTime = closingTime;
         this.restaurantCategory = restaurantCategory;
+        this.createdAt = createdAt;
         this.manager = manager;
     }
 }

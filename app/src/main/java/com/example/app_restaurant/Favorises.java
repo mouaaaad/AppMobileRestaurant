@@ -5,29 +5,31 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.app_restaurant.ApiClient.ApiClient;
 import com.example.app_restaurant.Model.Restaurant;
 
-import com.example.app_restaurant.dataBase.data;
+import com.example.app_restaurant.ModelClient.Client;
+import com.example.app_restaurant.ModelClient.FavorieClient;
+import com.example.app_restaurant.ModelClient.RestaurantInterface;
+import com.example.app_restaurant.ModelClient.UserInterface;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnItemClick;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class Favorises extends AppCompatActivity {
     SharedPreferences preferences ;
@@ -37,7 +39,11 @@ public class Favorises extends AppCompatActivity {
     ListView listRestaurant ;
     ArrayList<Restaurant> restaurants;
     RestaurantAdapter adapter ;
-    data db_favorie ;
+    RestaurantInterface apiFavorie;
+    UserInterface ApiUser;
+    Client user ;
+    private String login;
+    Float rate;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +76,61 @@ public class Favorises extends AppCompatActivity {
                 return false;
             }
         });
+        restaurants =new ArrayList<Restaurant>();
+        sharedPreferences = getSharedPreferences("myRef", MODE_PRIVATE);
+        login = sharedPreferences.getString("Login", null);
+        ApiUser=  ApiClient.getClient().create(UserInterface.class);
+        Call<Client> clientCall= ApiUser.getClientByemail(login);
+        clientCall.enqueue(new Callback<Client>() {
+            @Override
+            public void onResponse(Call<Client> call, Response<Client> response) {
+                user=response.body();
+                apiFavorie= ApiClient.getClient().create(RestaurantInterface.class);
+                Call<List<FavorieClient>> favorieClientCall= apiFavorie.getFavorieClient(user.getId());
+                favorieClientCall.enqueue(new Callback<List<FavorieClient>>() {
+                    @Override
+                    public void onResponse(Call<List<FavorieClient>> call, Response<List<FavorieClient>> response) {
+                        List<FavorieClient> restaurantts=response.body();
+                        Log.d("restaurantFF",response.body()+"");
+                        for (FavorieClient restaurant : restaurantts){
+                            RestaurantInterface apiRate = ApiClient.getClient().create(RestaurantInterface.class);
+                            Call<Float> doubleCall= apiRate.getRate(restaurant.getId());
+                            doubleCall.enqueue(new Callback<Float>() {
+                                @Override
+                                public void onResponse(Call<Float> call, Response<Float> response) {
+                                    rate=response.body();
+                                    restaurants.add(new Restaurant(restaurant.getRestaurant().getName(),restaurant.getRestaurant().getCity().getCity(),restaurant.getRestaurant().getRestaurantCategory().getCategory(),restaurant.getRestaurant().getManager().getUsername(),restaurant.getRestaurant().getPicture().toString(),rate));
+                                    adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
+                                    listRestaurant.setAdapter(adapter);
+                                }
 
+                                @Override
+                                public void onFailure(Call<Float> call, Throwable t) {
+                                    restaurants.add(new Restaurant(restaurant.getRestaurant().getName(),restaurant.getRestaurant().getCity().getCity(),restaurant.getRestaurant().getRestaurantCategory().getCategory(),restaurant.getRestaurant().getManager().getUsername(),restaurant.getRestaurant().getPicture().toString(),0));
+                                    adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
+                                    listRestaurant.setAdapter(adapter);
+                                }
+                            });
+                        }
+                        adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
+                        listRestaurant.setAdapter(adapter);
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<FavorieClient>> call, Throwable t) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Call<Client> call, Throwable t) {
+
+            }
+        });
+
+
+/*
         sharedPreferences=getSharedPreferences("myRef",MODE_PRIVATE);;
         String phone =sharedPreferences.getString("Login",null);
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -107,7 +167,7 @@ public class Favorises extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-            }        });
+            }        });*/
 
 }
     @OnItemClick(R.id.list_restaurant_favorie)

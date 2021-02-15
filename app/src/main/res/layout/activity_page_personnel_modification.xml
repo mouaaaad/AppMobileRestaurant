@@ -15,7 +15,31 @@
 
         <com.rengwuxian.materialedittext.MaterialEditText
             android:id="@+id/nom_modification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:hint="Nom"
+            android:inputType="text"
+            android:textColor="@android:color/white"
+            android:textSize="34sp"
+            app:met_floatingLabel="highlight"
+            app:met_primaryColor="@android:color/white"
+            app:met_singleLineEllipsis="true" />
+
+        <com.rengwuxian.materialedittext.MaterialEditText
+            android:id="@+id/tele_modification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Téléphone"
+            android:inputType="phone"
+            android:textColor="@android:color/white"
+            android:textSize="34sp"
+            app:met_floatingLabel="highlight"
+            app:met_primaryColor="@android:color/white"
+            app:met_singleLineEllipsis="true" />
+
+        <com.rengwuxian.materialedittext.MaterialEditText
+            android:id="@+id/email_modification"
+            android:hint="Email"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:textSize="34sp"
@@ -27,8 +51,8 @@
             />
 
         <com.rengwuxian.materialedittext.MaterialEditText
-            android:id="@+id/detail_modification"
-            android:hint="detail personnel"
+            android:id="@+id/adress_modification"
+            android:hint="adress"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:textSize="34sp"

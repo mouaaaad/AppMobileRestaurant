@@ -12,8 +12,11 @@ import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.app_restaurant.ApiClient.ApiClient;
 import com.example.app_restaurant.Model.Restaurant;
 
+import com.example.app_restaurant.ModelClient.RestaurantClient;
+import com.example.app_restaurant.ModelClient.RestaurantInterface;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -23,9 +26,13 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class Actualite extends AppCompatActivity {
     SharedPreferences preferences ;
@@ -38,6 +45,8 @@ public class Actualite extends AppCompatActivity {
     ArrayList<Restaurant> restaurants;
 
     RestaurantAdapter adapter ;
+    RestaurantInterface api;
+    Float rate ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,8 +80,45 @@ public class Actualite extends AppCompatActivity {
             }
         });
 
+        restaurants =new ArrayList<Restaurant>();
+        api= ApiClient.getClient().create(RestaurantInterface.class);
+        Call<List<RestaurantClient>> call= api.getActualite();
+        call.enqueue(new Callback<List<RestaurantClient>>() {
+            @Override
+            public void onResponse(Call<List<RestaurantClient>> call, Response<List<RestaurantClient>> response) {
+                Log.e("tttttt",response.body()+"");
+                List<RestaurantClient> restaurantts=response.body();
+                for (RestaurantClient restaurant : restaurantts){
+                    RestaurantInterface apiRate = ApiClient.getClient().create(RestaurantInterface.class);
+                    Call<Float> doubleCall= apiRate.getRate(restaurant.getId());
+                    doubleCall.enqueue(new Callback<Float>() {
+                        @Override
+                        public void onResponse(Call<Float> call, Response<Float> response) {
+                            rate=response.body();
+                            restaurants.add(new Restaurant(restaurant.getName(),restaurant.getCity().getCity(),restaurant.getRestaurantCategory().getCategory(),restaurant.getManager().getUsername(),restaurant.getPicture().toString(),rate));
+                            adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
+                            listRestaurant.setAdapter(adapter);
+                        }
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
+                        @Override
+                        public void onFailure(Call<Float> call, Throwable t) {
+                            Log.d("Nooon",rate+"");
+                            restaurants.add(new Restaurant(restaurant.getName(),restaurant.getCity().getCity(),restaurant.getRestaurantCategory().getCategory(),restaurant.getManager().getUsername(),restaurant.getPicture().toString(),0));
+                            adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
+                            listRestaurant.setAdapter(adapter);
+                        }
+                    });
+                }
+                adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
+                listRestaurant.setAdapter(adapter);
+            }
+
+            @Override
+            public void onFailure(Call<List<RestaurantClient>> call, Throwable t) {
+                Log.e("rrrrr",t.getLocalizedMessage()+"");
+            }
+        });
+        /*FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference table_restaurant = database.getReference("Restaurant");
 
         restaurants =new ArrayList<Restaurant>();
@@ -108,7 +154,7 @@ public class Actualite extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.d("test","non");
-            }        });
+            }        });*/
 
 
 

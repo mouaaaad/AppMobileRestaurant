@@ -63,7 +63,8 @@ public class HomeClient extends AppCompatActivity implements OnItemSelectedListe
     SearchView searchView ;
     RestaurantInterface api;
     private  StorageReference mStorageRef;
-
+    Float rate;
+    List<RestaurantClient> restaurantts ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,12 +113,28 @@ public class HomeClient extends AppCompatActivity implements OnItemSelectedListe
             @Override
             public void onResponse(Call<List<RestaurantClient>> call, Response<List<RestaurantClient>> response) {
                 Log.e("tttttt",response.body()+"");
-                List<RestaurantClient> restaurantts=response.body();
+                 restaurantts=response.body();
                 for (RestaurantClient restaurant : restaurantts){
-                    restaurants.add(new Restaurant(restaurant.getName(),restaurant.getCity().getCity(),restaurant.getRestaurantCategory().getCategory(),restaurant.getManager().getUsername(),"",0));
+                    RestaurantInterface apiRate = ApiClient.getClient().create(RestaurantInterface.class);
+                    Call<Float> doubleCall= apiRate.getRate(restaurant.getId());
+                    doubleCall.enqueue(new Callback<Float>() {
+                        @Override
+                        public void onResponse(Call<Float> call, Response<Float> response) {
+                            rate=response.body();
+                            restaurants.add(new Restaurant(restaurant.getName(),restaurant.getCity().getCity(),restaurant.getRestaurantCategory().getCategory(),restaurant.getManager().getUsername(),restaurant.getPicture().toString(),rate));
+                            adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
+                            listRestaurant.setAdapter(adapter);
+                        }
+
+                        @Override
+                        public void onFailure(Call<Float> call, Throwable t) {
+                            Log.d("Nooon",rate+"");
+                            restaurants.add(new Restaurant(restaurant.getName(),restaurant.getCity().getCity(),restaurant.getRestaurantCategory().getCategory(),restaurant.getManager().getUsername(),restaurant.getPicture().toString(),0));
+                            adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
+                            listRestaurant.setAdapter(adapter);
+                        }
+                    });
                 }
-                adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
-                listRestaurant.setAdapter(adapter);
             }
 
             @Override

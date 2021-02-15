@@ -18,7 +18,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.app_restaurant.ApiClient.ApiClient;
 import com.example.app_restaurant.Model.User;
+import com.example.app_restaurant.ModelClient.Client;
+import com.example.app_restaurant.ModelClient.UserInterface;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,18 +32,26 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnItemClick;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class PagePersonnelModification extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     SharedPreferences preferences ;
     SharedPreferences sharedPreferences;
     DatabaseReference table_user ;
-    String phone ;
+    String email ;
     Spinner spinner ;
     String ville ;
     @BindView(R.id.nom_modification)
     TextView textViewNom ;
-    @BindView(R.id.detail_modification)
-    TextView textViewDetail ;
+    @BindView(R.id.email_modification)
+    TextView textViewEmail ;
+    @BindView(R.id.adress_modification)
+    TextView textViewAdress ;
+    @BindView(R.id.tele_modification)
+    TextView textViewTele ;
+    Client client ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +59,7 @@ public class PagePersonnelModification extends AppCompatActivity implements Adap
         ButterKnife.bind(this);
 
         sharedPreferences=getSharedPreferences("myRef",MODE_PRIVATE);
-        phone =sharedPreferences.getString("Login",null);
+        email =sharedPreferences.getString("Login",null);
         spinner=(Spinner)findViewById(R.id.ville);
 
         ArrayAdapter<CharSequence> adapter=ArrayAdapter.createFromResource(this,R.array.villes, android.R.layout.simple_spinner_item);
@@ -56,7 +67,7 @@ public class PagePersonnelModification extends AppCompatActivity implements Adap
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
+      /*  FirebaseDatabase database = FirebaseDatabase.getInstance();
         table_user = database.getReference("User");
         table_user.addValueEventListener(new ValueEventListener() {
             @Override
@@ -69,6 +80,27 @@ public class PagePersonnelModification extends AppCompatActivity implements Adap
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });*/
+        UserInterface apiClient = ApiClient.getClient().create(UserInterface.class);
+        Call<Client> clientCall= apiClient.getClientByemail(email);
+        clientCall.enqueue(new Callback<Client>() {
+            @Override
+            public void onResponse(Call<Client> call, Response<Client> response) {
+                client=response.body();
+                textViewNom.setText(client.getUsername());
+
+                if(client.getEmail()!=null||!client.getEmail().equals(""))
+                    textViewEmail.setText(client.getEmail());
+                if(client.getAddress()!=null||!client.getAddress().equals(""))
+                    textViewAdress.setText(client.getAddress());
+                if(client.getTel()!=null||!client.getTel().equals(""))
+                    textViewTele.setText(client.getTel());
+            }
+
+            @Override
+            public void onFailure(Call<Client> call, Throwable t) {
 
             }
         });
@@ -89,7 +121,27 @@ public class PagePersonnelModification extends AppCompatActivity implements Adap
 
     @OnClick(R.id.btnSave)
     public void modification(){
-        table_user.addValueEventListener(new ValueEventListener() {
+        client.setUsername(textViewNom.getText().toString());
+        client.setCity(ville);
+        if(!textViewEmail.getText().toString().equals(""))
+            client.setEmail(textViewEmail.getText().toString());
+        if(!textViewAdress.getText().toString().equals(""))
+            client.setAddress(textViewAdress.getText().toString());
+        if(!textViewTele.getText().toString().equals(""))
+            client.setTel(textViewTele.getText().toString());
+        UserInterface apiClientUpdate = ApiClient.getClient().create(UserInterface.class);
+        Call<Client> clientCall= apiClientUpdate.update(client);
+        clientCall.enqueue(new Callback<Client>() {
+            @Override
+            public void onResponse(Call<Client> call, Response<Client> response) {
+            }
+
+            @Override
+            public void onFailure(Call<Client> call, Throwable t) {
+
+            }
+        });
+        /*table_user.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
@@ -106,7 +158,7 @@ public class PagePersonnelModification extends AppCompatActivity implements Adap
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        });*/
         Intent modifie = new Intent(this, PagePersonnel.class);
         startActivity(modifie);
     }

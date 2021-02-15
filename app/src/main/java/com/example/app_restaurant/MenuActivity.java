@@ -9,6 +9,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,7 +22,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.app_restaurant.ApiClient.ApiClient;
 import com.example.app_restaurant.Model.menu;
+import com.example.app_restaurant.ModelClient.Meal;
+import com.example.app_restaurant.ModelClient.RestaurantClient;
+import com.example.app_restaurant.ModelClient.RestaurantInterface;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
@@ -36,6 +41,10 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.IOException;
 import java.util.UUID;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MenuActivity extends AppCompatActivity {
     SharedPreferences preferences ;
@@ -56,6 +65,8 @@ public class MenuActivity extends AppCompatActivity {
     FirebaseStorage storage;
     StorageReference storageReference;
     private  StorageReference mStorageRef;
+    RestaurantInterface apiMenu;
+    RestaurantInterface apiRestaurant;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -249,7 +260,38 @@ public class MenuActivity extends AppCompatActivity {
                 progressDialog.setMessage("Please wait..!");
                 progressDialog.show();
 
-                table_menu.addValueEventListener(new ValueEventListener() {
+                apiRestaurant= ApiClient.getClient().create(RestaurantInterface.class);
+                Call<RestaurantClient> restaurantClientCall=apiRestaurant.getRestaurantByName(restaurant);
+                restaurantClientCall.enqueue(new Callback<RestaurantClient>() {
+                    @Override
+                    public void onResponse(Call<RestaurantClient> call, Response<RestaurantClient> response) {
+                        RestaurantClient restaurantClient =response.body();
+                        apiMenu= ApiClient.getClient().create(RestaurantInterface.class);
+                        Meal meal =new Meal(edtplat.getText().toString(),Double.parseDouble(edtPrix.getText().toString()),edtDetail.getText().toString(),restaurantClient,null);
+                        Call<Meal>mealCall =apiMenu.postMeal(meal);
+                        mealCall.enqueue(new Callback<Meal>() {
+                            @Override
+                            public void onResponse(Call<Meal> call, Response<Meal> response) {
+                                Log.d("yyyyy","yyyyyy");
+                            }
+
+                            @Override
+                            public void onFailure(Call<Meal> call, Throwable t) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(Call<RestaurantClient> call, Throwable t) {
+
+                    }
+                });
+
+
+                Intent home = new Intent(MenuActivity.this, ListeMenuActivity.class);
+                home.putExtra("restaurant",restaurant);
+                /*table_menu.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
 
@@ -258,10 +300,13 @@ public class MenuActivity extends AppCompatActivity {
                             Toast.makeText(MenuActivity.this,"Restaurant already exists!",Toast.LENGTH_SHORT).show();
                         }
                         else {
-                            progressDialog.dismiss();
+                           /* progressDialog.dismiss();
                             menu menu = new menu(edtplat.getText().toString(),edtPrix.getText().toString(),image,edtDetail.getText().toString(),restaurant);
                             table_menu.child(edtplat.getText().toString()).setValue(menu);
                             Toast.makeText(MenuActivity.this," Menu Ajouter! " ,Toast.LENGTH_SHORT).show();
+                            apiMenu= ApiClient.getClient().create(RestaurantInterface.class);
+                            Meal meal =new Meal();
+                            Call<Meal> restaurantClientCall=apiMenu.postMeal(meal);
                             Intent home = new Intent(MenuActivity.this, ListeMenuActivity.class);
                             home.putExtra("restaurant",restaurant);
 
@@ -275,7 +320,7 @@ public class MenuActivity extends AppCompatActivity {
                     public void onCancelled(DatabaseError databaseError) {
 
                     }
-                });
+                });*/
             }
         });
     }

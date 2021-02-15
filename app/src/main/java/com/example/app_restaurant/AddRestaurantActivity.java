@@ -29,7 +29,15 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.example.app_restaurant.ApiClient.ApiClient;
 import com.example.app_restaurant.Model.Restaurant;
+import com.example.app_restaurant.ModelClient.City;
+import com.example.app_restaurant.ModelClient.Manager;
+import com.example.app_restaurant.ModelClient.RestaurantCategory;
+import com.example.app_restaurant.ModelClient.RestaurantClient;
+import com.example.app_restaurant.ModelClient.RestaurantInterface;
+import com.example.app_restaurant.ModelClient.UserClient;
+import com.example.app_restaurant.ModelClient.UserInterface;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
@@ -45,8 +53,13 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import android.widget.AdapterView.OnItemSelectedListener;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AddRestaurantActivity extends AppCompatActivity implements OnItemSelectedListener {
     //localisation
@@ -56,10 +69,12 @@ public class AddRestaurantActivity extends AppCompatActivity implements OnItemSe
     private  double latitude ;
     private  double longitude ;
     //
-    EditText edtNom,edtAdresse,edtType , edtOuverture , edtFermeture;
+    EditText edtNom,edtAdresse,edtType , edtOuverture , edtFermeture,edtPhone;
     Button btnAjouter;
     Spinner spinner ;
+    Spinner spinnerVille ;
     String categorie ;
+    String ville;
 
     String image;
     // views for button
@@ -78,7 +93,13 @@ public class AddRestaurantActivity extends AppCompatActivity implements OnItemSe
     FirebaseStorage storage;
     StorageReference storageReference;
     private  StorageReference mStorageRef;
-
+    RestaurantInterface api;
+    RestaurantInterface apiRestC;
+    RestaurantInterface apiCity;
+    UserInterface ApiUser;
+    Manager manager_rest;
+    RestaurantCategory restaurantCategory;
+    SharedPreferences sharedPreferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +109,12 @@ public class AddRestaurantActivity extends AppCompatActivity implements OnItemSe
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
+
+        spinnerVille=(Spinner)findViewById(R.id.edtVille);
+        ArrayAdapter<CharSequence> adapterVille=ArrayAdapter.createFromResource(this,R.array.villes, android.R.layout.simple_spinner_item);
+        adapterVille.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerVille.setAdapter(adapterVille);
+        spinnerVille.setOnItemSelectedListener(this);
         //localisation
         //
         client = LocationServices.getFusedLocationProviderClient(this);
@@ -287,25 +314,82 @@ public class AddRestaurantActivity extends AppCompatActivity implements OnItemSe
         }
 
         edtNom = (EditText)findViewById(R.id.edtNom);
-        edtAdresse = (EditText)findViewById(R.id.edtAdresse);
         btnAjouter = (Button)findViewById(R.id.btnAjouter);
         edtOuverture=(EditText)findViewById(R.id.editOuverture) ;
         edtFermeture=(EditText)findViewById(R.id.editFermeture);
+        edtPhone=(EditText)findViewById(R.id.editPhone);
         Intent intent=getIntent();
         //String user=intent.getStringExtra("client");
+        sharedPreferences=getSharedPreferences("myRef",MODE_PRIVATE);
         String user=intent.getStringExtra("user");
+        ApiUser=  ApiClient.getClient().create(UserInterface.class);
+        Call<Manager> call= ApiUser.getManagerByemail(sharedPreferences.getString("Login","null"));
+        call.enqueue(new Callback<Manager>() {
+            @Override
+            public void onResponse(Call<Manager> call, Response<Manager> response) {
+                manager_rest=response.body();
+            }
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference table_restaurant = database.getReference("Restaurant");
+            @Override
+            public void onFailure(Call<Manager> call, Throwable t) {
+
+            }
+        });
+        //FirebaseDatabase database = FirebaseDatabase.getInstance();
+        //final DatabaseReference table_restaurant = database.getReference("Restaurant");
         btnAjouter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                final ProgressDialog progressDialog = new ProgressDialog(AddRestaurantActivity.this);
-                progressDialog.setMessage("Please wait..!");
-                progressDialog.show();
+                apiRestC=ApiClient.getClient().create(RestaurantInterface.class);
+                Call<RestaurantCategory> categoryCall=apiRestC.getCategotie(categorie);
+                categoryCall.enqueue(new Callback<RestaurantCategory>() {
+                    @Override
+                    public void onResponse(Call<RestaurantCategory> call, Response<RestaurantCategory> response) {
+                       restaurantCategory=response.body();
 
-                table_restaurant.addValueEventListener(new ValueEventListener() {
+                        apiCity=ApiClient.getClient().create(RestaurantInterface.class);
+                        Log.d("ville",ville);
+                        Call<City> cityCall=apiCity.getCity(ville);
+                        cityCall.enqueue(new Callback<City>() {
+                            @Override
+                            public void onResponse(Call<City> call, Response<City> response) {
+                                City city=response.body();
+                                api= ApiClient.getClient().create(RestaurantInterface.class);
+                                Date dt = new Date();
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                                String check = dateFormat.format(dt);
+                                Log.d("datte",check);
+                                RestaurantClient restaurantClient =new RestaurantClient(edtNom.getText().toString(),image,edtPhone.getText().toString(),latitude,longitude,city,edtOuverture.getText().toString(),edtFermeture.getText().toString(),restaurantCategory,check,manager_rest);
+                                Call<RestaurantClient> restaurantClientCall=api.postRestaurant(restaurantClient);
+                                restaurantClientCall.enqueue(new Callback<RestaurantClient>() {
+                                    @Override
+                                    public void onResponse(Call<RestaurantClient> call, Response<RestaurantClient> response) {
+                                        Log.d("yyyy",response.body()+"");
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<RestaurantClient> call, Throwable t) {
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onFailure(Call<City> call, Throwable t) {
+
+                            }
+                        });
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<RestaurantCategory> call, Throwable t) {
+                    }
+                });
+
+
+
+             /*  table_restaurant.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
 
@@ -333,7 +417,7 @@ public class AddRestaurantActivity extends AppCompatActivity implements OnItemSe
                     public void onCancelled(DatabaseError databaseError) {
 
                     }
-                });
+                });*/
             }
         });
     }
@@ -378,8 +462,15 @@ public class AddRestaurantActivity extends AppCompatActivity implements OnItemSe
     }
     @Override
     public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
-        categorie=parent.getItemAtPosition(position).toString();
+        switch(parent.getId()) {
+            case R.id.edtType: {
+                categorie = parent.getItemAtPosition(position).toString();
+            }
+            case R.id.edtVille: {
+                ville = parent.getItemAtPosition(position).toString();
+            }
 
+        }
     }
 
     @Override
@@ -413,4 +504,5 @@ public class AddRestaurantActivity extends AppCompatActivity implements OnItemSe
         }
         return super.onOptionsItemSelected(item);
     }
+
 }

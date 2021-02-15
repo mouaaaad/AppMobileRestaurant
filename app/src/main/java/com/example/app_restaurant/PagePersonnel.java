@@ -12,6 +12,11 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.app_restaurant.ApiClient.ApiClient;
+import com.example.app_restaurant.ModelClient.Client;
+import com.example.app_restaurant.ModelClient.RestaurantInterface;
+import com.example.app_restaurant.ModelClient.Review;
+import com.example.app_restaurant.ModelClient.UserInterface;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -19,9 +24,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class PagePersonnel extends AppCompatActivity {
     SharedPreferences preferences ;
@@ -33,8 +44,10 @@ public class PagePersonnel extends AppCompatActivity {
     TextView textViewPhone;
     @BindView(R.id.ville_client)
     TextView textViewVille ;
-    @BindView(R.id.detail_client)
-    TextView textViewDetail ;
+    @BindView(R.id.adress_client)
+    TextView textViewAdress ;
+    @BindView(R.id.email_client)
+    TextView textViewEmail ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,11 +83,34 @@ public class PagePersonnel extends AppCompatActivity {
         });
 
         sharedPreferences=getSharedPreferences("myRef",MODE_PRIVATE);
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference table_user = database.getReference("User");
-        String phone =sharedPreferences.getString("Login",null);
-        Log.d("phone",phone);
-        table_user.addValueEventListener(new ValueEventListener() {
+        //FirebaseDatabase database = FirebaseDatabase.getInstance();
+       // final DatabaseReference table_user = database.getReference("User");
+        String email =sharedPreferences.getString("Login",null);
+        UserInterface apiClient = ApiClient.getClient().create(UserInterface.class);
+        Call<Client> clientCall= apiClient.getClientByemail(email);
+        clientCall.enqueue(new Callback<Client>() {
+            @Override
+            public void onResponse(Call<Client> call, Response<Client> response) {
+                Client client=response.body();
+               textViewNom.setText("Bienvenue "+client.getUsername());
+               if(client.getEmail()!=null&&!client.getEmail().equals(""))
+                   textViewEmail.setText(client.getEmail());
+               if(client.getAddress()!=null&&!client.getAddress().equals(""))
+                   textViewAdress.setText(client.getAddress());
+               if(client.getCity()!=null&&!client.getCity().equals(""))
+                   textViewVille.setText(client.getCity());
+               if(client.getTel()!=null&&!client.getTel().equals(""))
+                   textViewPhone.setText(client.getTel());
+            }
+
+            @Override
+            public void onFailure(Call<Client> call, Throwable t) {
+
+            }
+        });
+
+
+        /*table_user.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot!=null && dataSnapshot.exists()) {
@@ -96,7 +132,7 @@ public class PagePersonnel extends AppCompatActivity {
 
             }
 
-        });
+        });*/
 
 
     }

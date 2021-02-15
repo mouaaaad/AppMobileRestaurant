@@ -3,7 +3,7 @@ package com.example.app_restaurant.ModelClient;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class RestaurantCategory {
+public class MealCategory {
 
     @SerializedName("id")
     @Expose
@@ -28,8 +28,4 @@ public class RestaurantCategory {
         this.category = category;
     }
 
-    public RestaurantCategory(Integer id, String category) {
-        this.id = id;
-        this.category = category;
-    }
 }

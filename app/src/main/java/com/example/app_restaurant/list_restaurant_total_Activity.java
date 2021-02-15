@@ -20,7 +20,10 @@ import com.baoyz.swipemenulistview.SwipeMenu;
 import com.baoyz.swipemenulistview.SwipeMenuCreator;
 import com.baoyz.swipemenulistview.SwipeMenuItem;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
+import com.example.app_restaurant.ApiClient.ApiClient;
 import com.example.app_restaurant.Model.Restaurant;
+import com.example.app_restaurant.ModelClient.RestaurantClient;
+import com.example.app_restaurant.ModelClient.RestaurantInterface;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -30,15 +33,17 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnItemClick;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class list_restaurant_total_Activity extends AppCompatActivity {
-    //@BindView(R.id.list_restaurant_total)
-    //ListView listRestaurantTotal ;
     SharedPreferences preferences ;
     ArrayList<Restaurant> restaurants;
     RestaurantAdapter adapter ;
@@ -46,6 +51,9 @@ public class list_restaurant_total_Activity extends AppCompatActivity {
     private StorageReference mStorageRef;
     SwipeMenuListView listRestaurantTotal;
     SwipeMenuCreator creator;
+    RestaurantInterface api;
+    RestaurantInterface apiDelete;
+    SharedPreferences sharedPreferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,12 +100,31 @@ public class list_restaurant_total_Activity extends AppCompatActivity {
         Bundle extras=getIntent().getExtras();
         num=new String(extras.getString("user"));
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
+       /* FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference table_restaurant = database.getReference("Restaurant");
-        mStorageRef= FirebaseStorage.getInstance().getReference();
-
+        mStorageRef= FirebaseStorage.getInstance().getReference();*/
+        sharedPreferences=getSharedPreferences("myRef",MODE_PRIVATE);
         restaurants =new ArrayList<Restaurant>();
-        table_restaurant.addValueEventListener(new ValueEventListener(){
+        api= ApiClient.getClient().create(RestaurantInterface.class);
+        Call<List<RestaurantClient>> call= api.getRestaurantByEmail(sharedPreferences.getString("Login","null"));
+        call.enqueue(new Callback<List<RestaurantClient>>() {
+            @Override
+            public void onResponse(Call<List<RestaurantClient>> call, Response<List<RestaurantClient>> response) {
+                Log.e("tttttt",response.body()+"");
+                List<RestaurantClient> restaurantts=response.body();
+                for (RestaurantClient restaurant : restaurantts){
+                    restaurants.add(new Restaurant(restaurant.getName(),restaurant.getCity().getCity(),restaurant.getRestaurantCategory().getCategory(),restaurant.getManager().getUsername(),"",0));
+                }
+                adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
+                listRestaurantTotal.setAdapter(adapter);
+            }
+
+            @Override
+            public void onFailure(Call<List<RestaurantClient>> call, Throwable t) {
+                Log.e("rrrrr",t.getLocalizedMessage()+"");
+            }
+        });
+        /*table_restaurant.addValueEventListener(new ValueEventListener(){
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
@@ -131,7 +158,7 @@ public class list_restaurant_total_Activity extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.d("test","non");
-            }        });
+            }        });*/
 
         listRestaurantTotal.setOnMenuItemClickListener(new SwipeMenuListView.OnMenuItemClickListener() {
             @Override
@@ -141,18 +168,26 @@ public class list_restaurant_total_Activity extends AppCompatActivity {
                     case 0:
                         Restaurant restaurant ;
                         restaurant=restaurants.get(position);
-                        FirebaseDatabase database = FirebaseDatabase.getInstance();
-                        DatabaseReference table_res = database.getReference("Restaurant");
-                        table_res.child(restaurant.getNom()).removeValue();
+                        //FirebaseDatabase database = FirebaseDatabase.getInstance();
+                        //DatabaseReference table_res = database.getReference("Restaurant");
+                        //table_res.child(restaurant.getNom()).removeValue();
+                        apiDelete= ApiClient.getClient().create(RestaurantInterface.class);
+                        Call<Void> voidCall= api.deleteRestaurant(restaurant.getNom());
+                        voidCall.enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> response) {
+
+                            }
+
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {
+
+                            }
+                        });
                         restaurants.clear();
                         //restaurants.remove(restaurant);
                         adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
                         listRestaurantTotal.setAdapter(adapter);
-                        break;
-                    case 1:
-                        Restaurant restaurant2 ;
-                        restaurant2=restaurants.get(position);
-                        Log.d("restaurant2",restaurant2.getNom());
                         break;
                 }
 

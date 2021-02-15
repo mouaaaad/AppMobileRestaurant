@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
                                     Intent home = new Intent(this, HomeClient.class);
                                     startActivity(home);
                                 }
-                                else if(sharedPreferences.getString("type", "null").equals("Entreprise")) {
+                                else if(sharedPreferences.getString("type", "null").equals("Manager")) {
                                     Intent home = new Intent(this, list_restaurant_total_Activity.class);
                                     home.putExtra("user",sharedPreferences.getString("username", null));
                                     startActivity(home);

@@ -13,17 +13,31 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.app_restaurant.ApiClient.ApiClient;
 import com.example.app_restaurant.Model.Commentaire;
 import com.example.app_restaurant.Model.User;
+import com.example.app_restaurant.ModelClient.Client;
+import com.example.app_restaurant.ModelClient.Meal;
+import com.example.app_restaurant.ModelClient.RestaurantClient;
+import com.example.app_restaurant.ModelClient.RestaurantInterface;
+import com.example.app_restaurant.ModelClient.Review;
+import com.example.app_restaurant.ModelClient.UserInterface;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AjoutCommentaire extends AppCompatActivity {
     SharedPreferences preferences ;
@@ -34,6 +48,11 @@ public class AjoutCommentaire extends AppCompatActivity {
     @BindView(R.id.titre_comentaire)
     TextView textViewTitre ;
     float rating;
+    RestaurantInterface apiReview;
+    RestaurantInterface apiRestaurant ;
+    UserInterface apiClient ;
+    RestaurantClient restaurantClient;
+    Client client;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +67,55 @@ public class AjoutCommentaire extends AppCompatActivity {
         Bundle value = intent.getExtras();
         String nom_restaurant =value.getString("nom_restaurant");
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        apiRestaurant = ApiClient.getClient().create(RestaurantInterface.class);
+        Call<RestaurantClient> restaurantClientCall=apiRestaurant.getRestaurantByName(nom_restaurant);
+        restaurantClientCall.enqueue(new Callback<RestaurantClient>() {
+            @Override
+            public void onResponse(Call<RestaurantClient> call, Response<RestaurantClient> response) {
+                restaurantClient=response.body();
+                SharedPreferences sharedPreferences = getSharedPreferences("myRef", MODE_PRIVATE);
+                String login = sharedPreferences.getString("Login", null);
+                apiClient=  ApiClient.getClient().create(UserInterface.class);
+                Call<Client> clientCall= apiClient.getClientByemail(login);
+                clientCall.enqueue(new Callback<Client>() {
+                    @Override
+                    public void onResponse(Call<Client> call, Response<Client> response) {
+                        client=response.body();
+                        Date dt = new Date();
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                        String check = dateFormat.format(dt);
+                        Review review=new Review(ratingBar.getRating(),textViewCommentaire.getText().toString(),check,client,restaurantClient);
+                        apiReview= ApiClient.getClient().create(RestaurantInterface.class);
+                        Call<Review> listCall= apiReview.postReview(review);
+                        listCall.enqueue(new Callback<Review>() {
+                            @Override
+                            public void onResponse(Call<Review> call, Response<Review> response) {
+
+                            }
+
+                            @Override
+                            public void onFailure(Call<Review> call, Throwable t) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(Call<Client> call, Throwable t) {
+
+                    }
+                });
+
+            }
+
+            @Override
+            public void onFailure(Call<RestaurantClient> call, Throwable t) {
+
+            }
+        });
+
+
+        /*FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference table_commentaire = database.getReference("Commentaire");
         table_commentaire.addValueEventListener(new ValueEventListener() {
             @Override
@@ -62,7 +129,7 @@ public class AjoutCommentaire extends AppCompatActivity {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        });*/
 
     }
 

@@ -17,27 +17,14 @@
 
     <string-array name="categories">
     <item>Fast Food</item>
-    <item>Café</item>
-    <item>restaurant</item>
-    <item>Bistrots</item>
-    <item>Pizzeria</item>
-    <item>restaurant vegans</item>
-    <item>restaurant marocain</item>
-    <item>restaurant asiatique</item>
-    <item>restaurant italien</item>
+    <item>Pizza</item>
+    <item>Tacos</item>
     </string-array>
 
     <string-array name="villes">
-        <item>Ville</item>
+        <item>Casablanca</item>
         <item>Rabat</item>
-        <item>Sale</item>
-        <item>Kenitra</item>
-        <item>Tanger</item>
-        <item>Casa</item>
-        <item>Fes</item>
-        <item>marakech</item>
-        <item>wajda</item>
-        <item>temara</item>
+        <item>Kénitra</item>
     </string-array>
     <string name="title_activity_detail_restaurant">Map</string>
 </resources>
