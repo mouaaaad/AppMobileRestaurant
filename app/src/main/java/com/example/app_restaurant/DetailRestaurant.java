@@ -371,4 +371,10 @@ public class DetailRestaurant extends FragmentActivity implements OnMapReadyCall
         }
         return super.onOptionsItemSelected(item);
     }
+    @OnClick(R.id.visite_menu)
+    void OnClickMenu(){
+        Intent RestaurantActivity = new Intent(this, VisiteMenu.class);
+        RestaurantActivity.putExtra("nom_restaurant",nom_restaurant);
+        startActivity(RestaurantActivity);
+    }
 }
