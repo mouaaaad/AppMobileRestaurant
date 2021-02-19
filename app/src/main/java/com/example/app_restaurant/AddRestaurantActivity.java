@@ -365,7 +365,10 @@ public class AddRestaurantActivity extends AppCompatActivity implements OnItemSe
                                 restaurantClientCall.enqueue(new Callback<RestaurantClient>() {
                                     @Override
                                     public void onResponse(Call<RestaurantClient> call, Response<RestaurantClient> response) {
-                                        Log.d("yyyy",response.body()+"");
+                                        Toast.makeText(AddRestaurantActivity.this, "Ajout par succés", Toast.LENGTH_SHORT).show();
+                                        Intent home = new Intent(AddRestaurantActivity.this, list_restaurant_total_Activity.class);
+                                        home.putExtra("user",response.body().getManager().getEmail());
+                                        startActivity(home);
                                     }
 
                                     @Override

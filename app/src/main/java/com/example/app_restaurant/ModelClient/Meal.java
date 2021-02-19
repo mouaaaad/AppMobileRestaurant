@@ -17,12 +17,23 @@ public class Meal {
     @SerializedName("detail")
     @Expose
     private String detail;
+    @SerializedName("photo")
+    @Expose
+    private String photo;
     @SerializedName("restaurant")
     @Expose
     private RestaurantClient restaurant;
     @SerializedName("mealCategory")
     @Expose
     private MealCategory mealCategory;
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
+    }
 
     public Integer getId() {
         return id;
@@ -56,12 +67,13 @@ public class Meal {
         this.detail = detail;
     }
 
-    public Meal(String meal, Double price, String detail, RestaurantClient restaurant, MealCategory mealCategory) {
+    public Meal(String meal, Double price, String detail,String photo, RestaurantClient restaurant, MealCategory mealCategory) {
         this.meal = meal;
         this.price = price;
         this.detail = detail;
         this.restaurant = restaurant;
         this.mealCategory = mealCategory;
+        this.photo=photo;
     }
 
     public RestaurantClient getRestaurant() {

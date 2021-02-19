@@ -92,6 +92,7 @@ public class Favorises extends AppCompatActivity {
                     public void onResponse(Call<List<FavorieClient>> call, Response<List<FavorieClient>> response) {
                         List<FavorieClient> restaurantts=response.body();
                         Log.d("restaurantFF",response.body()+"");
+                        if(restaurantts!=null)
                         for (FavorieClient restaurant : restaurantts){
                             RestaurantInterface apiRate = ApiClient.getClient().create(RestaurantInterface.class);
                             Call<Float> doubleCall= apiRate.getRate(restaurant.getId());

@@ -41,10 +41,12 @@ public class VisiteMenu extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Meal>> call, Response<List<Meal>> response) {
                 List<Meal> meals =response.body();
+
                 for(Meal meal : meals){
                     Log.d("menuus",response.body()+"");
-                    menus.add(new menu(meal.getMeal(),meal.getPrice()+"Dh","photo",meal.getDetail(),meal.getRestaurant().getName()));
+                    menus.add(new menu(meal.getMeal(),meal.getPrice()+"Dh",meal.getPhoto(),meal.getDetail(),meal.getRestaurant().getName()));
                 }
+
                 adapter=new MenuAdapter(getApplicationContext(), R.layout.activity_liste_menu,menus);
                 listMenuTotal.setAdapter(adapter);
             }

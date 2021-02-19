@@ -113,10 +113,28 @@ public class list_restaurant_total_Activity extends AppCompatActivity {
                 Log.e("tttttt",response.body()+"");
                 List<RestaurantClient> restaurantts=response.body();
                 for (RestaurantClient restaurant : restaurantts){
-                    restaurants.add(new Restaurant(restaurant.getName(),restaurant.getCity().getCity(),restaurant.getRestaurantCategory().getCategory(),restaurant.getManager().getUsername(),"",0));
+                    RestaurantInterface apiRate = ApiClient.getClient().create(RestaurantInterface.class);
+                    Call<Float> doubleCall= apiRate.getRate(restaurant.getId());
+                    doubleCall.enqueue(new Callback<Float>() {
+                        @Override
+                        public void onResponse(Call<Float> call, Response<Float> response) {
+                            Float rate=response.body();
+                            restaurants.add(new Restaurant(restaurant.getName(),restaurant.getCity().getCity(),restaurant.getRestaurantCategory().getCategory(),restaurant.getManager().getUsername(),restaurant.getPicture().toString(),rate));
+                            adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
+                            listRestaurantTotal.setAdapter(adapter);
+                        }
+
+                        @Override
+                        public void onFailure(Call<Float> call, Throwable t) {
+                            restaurants.add(new Restaurant(restaurant.getName(),restaurant.getCity().getCity(),restaurant.getRestaurantCategory().getCategory(),restaurant.getManager().getUsername(),restaurant.getPicture().toString(),0));
+                            adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
+                            listRestaurantTotal.setAdapter(adapter);
+                        }
+                    });
+                   // restaurants.add(new Restaurant(restaurant.getName(),restaurant.getCity().getCity(),restaurant.getRestaurantCategory().getCategory(),restaurant.getManager().getUsername(),restaurant.getPicture().toString(),0));
                 }
-                adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
-                listRestaurantTotal.setAdapter(adapter);
+               // adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
+             //   listRestaurantTotal.setAdapter(adapter);
             }
 
             @Override
@@ -184,8 +202,8 @@ public class list_restaurant_total_Activity extends AppCompatActivity {
 
                             }
                         });
-                        restaurants.clear();
-                        //restaurants.remove(restaurant);
+                      //  restaurants.clear();
+                        restaurants.remove(restaurant);
                         adapter=new RestaurantAdapter(getApplicationContext(),R.layout.structure_restaurant,restaurants);
                         listRestaurantTotal.setAdapter(adapter);
                         break;

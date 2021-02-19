@@ -111,7 +111,7 @@ public class ListeMenuActivity extends AppCompatActivity {
             public void onResponse(Call<List<Meal>> call, Response<List<Meal>> response) {
                 List<Meal> meals =response.body();
                 for(Meal meal : meals){
-                    menus.add(new menu(meal.getMeal(),meal.getPrice()+"Dh","photo",meal.getDetail(),meal.getRestaurant().getName()));
+                    menus.add(new menu(meal.getMeal(),meal.getPrice()+"Dh",meal.getPhoto(),meal.getDetail(),meal.getRestaurant().getName()));
                 }
                 adapter=new MenuAdapter(getApplicationContext(), R.layout.activity_liste_menu,menus);
                 listMenuTotal.setAdapter(adapter);
@@ -190,8 +190,8 @@ public class ListeMenuActivity extends AppCompatActivity {
 
                             }
                         });
-                        menus.clear();
-                        //restaurants.remove(restaurant);
+                        //menus.clear();
+                        menus.remove(Menu);
                         adapter=new MenuAdapter(getApplicationContext(),R.layout.activity_menu_structure,menus);
                         listMenuTotal.setAdapter(adapter);
                         break;

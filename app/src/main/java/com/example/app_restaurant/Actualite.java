@@ -30,6 +30,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnItemClick;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -186,5 +187,16 @@ public class Actualite extends AppCompatActivity {
             }
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @OnItemClick(R.id.list_restaurant_actualite)
+    public void  onListRestaurantFavorieItemClicked(int position) {
+        Restaurant restaurant ;
+        restaurant=restaurants.get(position);
+        String nom_restaurant=restaurant.getNom();
+        Intent RestaurantActivity = new Intent(this, DetailRestaurant.class);
+        RestaurantActivity.putExtra("nom_restaurant",nom_restaurant);
+        startActivity(RestaurantActivity);
+
     }
 }

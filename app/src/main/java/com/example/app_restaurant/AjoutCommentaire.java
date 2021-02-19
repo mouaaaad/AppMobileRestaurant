@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.example.app_restaurant.ApiClient.ApiClient;
 import com.example.app_restaurant.Model.Commentaire;
+import com.example.app_restaurant.Model.Restaurant;
 import com.example.app_restaurant.Model.User;
 import com.example.app_restaurant.ModelClient.Client;
 import com.example.app_restaurant.ModelClient.Meal;
@@ -90,7 +91,11 @@ public class AjoutCommentaire extends AppCompatActivity {
                         listCall.enqueue(new Callback<Review>() {
                             @Override
                             public void onResponse(Call<Review> call, Response<Review> response) {
-
+                                Toast.makeText(AjoutCommentaire.this, "Ajout par succés", Toast.LENGTH_SHORT).show();
+                                Intent RestaurantActivity = new Intent(AjoutCommentaire.this, DetailRestaurant.class);
+                                RestaurantActivity.putExtra("nom_restaurant",nom_restaurant);
+                               // RestaurantActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(RestaurantActivity);
                             }
 
                             @Override
@@ -114,22 +119,6 @@ public class AjoutCommentaire extends AppCompatActivity {
             }
         });
 
-
-        /*FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference table_commentaire = database.getReference("Commentaire");
-        table_commentaire.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                Commentaire comm =new Commentaire(textViewCommentaire.getText().toString(),ratingBar.getRating());
-                table_commentaire.child(nom_restaurant).child(textViewTitre.getText().toString()).setValue(comm);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });*/
 
     }
 

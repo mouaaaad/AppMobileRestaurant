@@ -23,6 +23,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.app_restaurant.ApiClient.ApiClient;
+import com.example.app_restaurant.Model.Restaurant;
 import com.example.app_restaurant.Model.menu;
 import com.example.app_restaurant.ModelClient.Meal;
 import com.example.app_restaurant.ModelClient.RestaurantClient;
@@ -267,12 +268,15 @@ public class MenuActivity extends AppCompatActivity {
                     public void onResponse(Call<RestaurantClient> call, Response<RestaurantClient> response) {
                         RestaurantClient restaurantClient =response.body();
                         apiMenu= ApiClient.getClient().create(RestaurantInterface.class);
-                        Meal meal =new Meal(edtplat.getText().toString(),Double.parseDouble(edtPrix.getText().toString()),edtDetail.getText().toString(),restaurantClient,null);
+                        Meal meal =new Meal(edtplat.getText().toString(),Double.parseDouble(edtPrix.getText().toString()),edtDetail.getText().toString(),image,restaurantClient,null);
                         Call<Meal>mealCall =apiMenu.postMeal(meal);
                         mealCall.enqueue(new Callback<Meal>() {
                             @Override
                             public void onResponse(Call<Meal> call, Response<Meal> response) {
-                                Log.d("yyyyy","yyyyyy");
+                                Toast.makeText(MenuActivity.this, "Ajout Par succés", Toast.LENGTH_SHORT).show();
+                                Intent home = new Intent(MenuActivity.this, ListeMenuActivity.class);
+                                home.putExtra("restaurant",restaurant);
+                                startActivity(home);
                             }
 
                             @Override
@@ -289,8 +293,6 @@ public class MenuActivity extends AppCompatActivity {
                 });
 
 
-                Intent home = new Intent(MenuActivity.this, ListeMenuActivity.class);
-                home.putExtra("restaurant",restaurant);
                 /*table_menu.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
